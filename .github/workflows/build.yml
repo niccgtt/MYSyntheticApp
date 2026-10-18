@@ -19,19 +19,35 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Download Gradle Wrapper JAR
+      run: |
+        mkdir -p gradle/wrapper
+        cd gradle/wrapper
+        wget -q https://repo.gradle.org/gradle/gradle-8.1.1-wrapper.jar -O gradle-wrapper.jar || \
+        wget -q https://raw.githubusercontent.com/gradle/gradle/v8.1.1/gradle/wrapper/gradle-wrapper.jar -O gradle-wrapper.jar || \
+        echo "Warning: gradle-wrapper.jar download failed, will try to generate"
+        ls -lh gradle-wrapper.jar 2>/dev/null || echo "gradle-wrapper.jar not found"
+
     - name: Make gradlew executable
-      run: chmod +x ./gradlew
+      run: |
+        chmod +x ./gradlew
+        chmod +x ./gradlew.bat
+        ls -la gradlew*
+
+    - name: Verify Gradle setup
+      run: ./gradlew --version 2>&1 | head -10
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace --info 2>&1 | tail -100
+      run: ./gradlew assembleDebug --stacktrace 2>&1 | tail -50
 
-    - name: Build Release APK (unsigned)
-      if: success()
-      run: ./gradlew assembleRelease --stacktrace --info 2>&1 | tail -100
-
-    - name: Build App Bundle
-      if: success()
-      run: ./gradlew bundleRelease --stacktrace --info 2>&1 | tail -100
+    - name: Check APK output
+      if: always()
+      run: |
+        echo "Checking APK output directories..."
+        find . -name "app-debug.apk" -o -name "app-release*.apk" -o -name "*.aab" 2>/dev/null | head -20
+        echo
+        echo "Full build output directory:"
+        ls -la app/build/outputs/ 2>/dev/null || echo "No outputs directory"
 
     - name: Upload Debug APK
       if: success()
@@ -40,12 +56,20 @@ jobs:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
 
+    - name: Build Release APK
+      if: success()
+      run: ./gradlew assembleRelease --stacktrace 2>&1 | tail -50
+
     - name: Upload Release APK
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: app-release-unsigned
         path: app/build/outputs/apk/release/app-release-unsigned.apk
+
+    - name: Build App Bundle
+      if: success()
+      run: ./gradlew bundleRelease --stacktrace 2>&1 | tail -50
 
     - name: Upload App Bundle
       if: success()
