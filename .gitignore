@@ -1,0 +1,45 @@
+# Android
+.gradle/
+.idea/
+*.iml
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Local configuration file
+local.properties
+
+# Gradle files
+.gradle
+build/
+
+# Android Studio
+*.iws
+*.iml
+.idea/
+
+# Keystore files
+*.jks
+*.keystore
+
+# NDK
+obj/
+
+# Misc
+.DS_Store
+.thumbs.db
+*.swp
+*.swo
+*~
+
+# Build outputs
+app/build/
+gradle/wrapper/gradle-wrapper.jar
+
+# Test outputs
+**/test-results/
+
+# User-specific configurations
+.vscode/
+*.bak
